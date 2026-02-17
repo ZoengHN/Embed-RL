@@ -1,0 +1,6 @@
+ckpt/Embed-RL-2B/
+ckpt/Embed-RL-4B/
+train/
+**/__pycache__/
+*.py[cod]
+*$py.class
