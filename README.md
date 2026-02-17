@@ -1,4 +1,4 @@
-# Embed-RL: Decoupled Reinforcement Learning for Reasoning-Driven Multimodal Embeddings
+# Embed-RL: Reinforcement Learning for Reasoning-Driven Multimodal Embeddings
 <div align="center">
 
 [![🤗 Model Hub](https://img.shields.io/badge/🤗%20HuggingFace-Embed--RL--2B-yellow)](https://huggingface.co/ZoengHouNaam/Embed-RL-2B)
