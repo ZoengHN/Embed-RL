@@ -37,6 +37,15 @@ The integration of multimodal evidence in structured reasoning, paired with retr
   <img src="assets/result.png" alt="Experimental Results" width="90%" height="auto"/>
 </div>
 
+## 🚀 Training
+## 🚀 Training
+The complete training code and detailed implementation guidelines will be released in the repository to facilitate reproducibility and further research on reasoning-driven multimodal embeddings. Key components of the training framework include:
+- Multi-node Grad Cache distributed contrastive learning framework based on Qwen-3VL
+- Curated training datasets tailored for reasoning-driven multimodal embedding optimization
+- Reinforcement learning framework built upon Qwen-3VL for optimizing the generation of Traceability CoT (T-CoT)
+- VLLM-based suspended service concurrent framework for Qwen-3VL to extract embeddings corresponding to the special token `<emb>`
+
+
 ## 🚀 Evaluation
 ### 1. Environment Setup
 ```bash
