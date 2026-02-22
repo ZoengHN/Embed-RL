@@ -7,9 +7,15 @@
 
 </div>
 
-## 📜 Authors & Affiliations
-**Author**: Haonan Jiang, Yuji Wang, Yongjie Zhu, Xin Lu, Wenyu Qin, Meng Wang, Pengfei Wan, Yansong Tang  
-**Affiliation**: Tsinghua Shenzhen International Graduate School, Tsinghua University; Kling Team, Kuaishou Technology
+### Authors & Affiliations
+**Authors**: Haonan Jiang¹²*、Yuji Wang¹²*、Yongjie Zhu²†、Xin Lu²、Wenyu Qin²、Meng Wang²、Pengfei Wan²、Yansong Tang¹‡  
+**Affiliations**: ¹Tsinghua Shenzhen International Graduate School, Tsinghua University；²Kling Team, Kuaishou Technology  
+
+**Emails**:  
+{jiang-hn24[AT]mails, yuji-wan24[AT]mails, tang.yansong[AT]sz}.tsinghua.edu.cn  
+{zhuyongjie, luxin09, qinwenyu, wangmeng46, wanpengfei}[AT]kuaishou.com  
+
+*Equal Contribution. Work done during an internship at Kuaishou Technology. †Project Leader. ‡Corresponding Author.
 
 ## 📖 Abstract
 Leveraging Multimodal Large Language Models (MLLMs) has become pivotal for advancing Universal Multimodal Embeddings (UME) in addressing diverse cross-modal tasks. Recent studies demonstrate that incorporating generative Chain-of-Thought (CoT) reasoning can substantially enhance task-specific representations compared to discriminative methods. However, the generated reasoning CoTs of existing generative embedding methods are limited to the textual analysis of queries and are irrelevant to the retrieval of the targets.
