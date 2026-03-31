@@ -1,6 +1,8 @@
 # Embed-RL: Reinforcement Learning for Reasoning-Driven Multimodal Embeddings
 <div align="center">
 
+[![🤗 Dataset](https://img.shields.io/badge/🤗%20HuggingFace-Embed--RL--Train-blue)](https://huggingface.co/datasets/ZoengHouNaam/Embed-RL-Train)
+[![🤗 Dataset](https://img.shields.io/badge/🤗%20HuggingFace-Embed--RL--Test-blue)](https://huggingface.co/datasets/ZoengHouNaam/Embed-RL-Test)
 [![🤗 Model Hub](https://img.shields.io/badge/🤗%20HuggingFace-Embed--RL--2B-yellow)](https://huggingface.co/ZoengHouNaam/Embed-RL-2B)
 [![🤗 Model Hub](https://img.shields.io/badge/🤗%20HuggingFace-Embed--RL--4B-yellow)](https://huggingface.co/ZoengHouNaam/Embed-RL-4B)
 [![📝 arXiv](https://img.shields.io/badge/📝%20arXiv-Embed--RL-red)](https://arxiv.org/abs/2602.13823)
@@ -43,8 +45,15 @@ The integration of multimodal evidence in structured reasoning, paired with retr
   <img src="assets/result.png" alt="Experimental Results" width="90%" height="auto"/>
 </div>
 
+Detailed results are available here:
+```sh
+./detailed_scores/embed-rl-2b.json
+./detailed_scores/embed-rl-4b.json
+```
+
 
 ## 🚀 Training
+### Contrastive Learning
 You can easily train Qwen3-VL on your dataset (including multi-node-GPU training, supporting texts, images and videos) to obtain VLM-based embeddings by following our simple infrastructure.
 
 Qwen3-VL-2B
@@ -62,6 +71,12 @@ You can then obtain the final VLM-based embeddings by merging LoRA adapters usin
 ./train/merge_lora/merge_lora.sh
 ```
 
+### Reinforcement Learning
+After completing the contrastive learning training and merging the LoRA weights, you can fine-tune the Reasoner via reinforcement learning.
+
+```sh
+./train/reinforcement_learning/verl/examples/vlm2vec/run_vlm2vec_grpo_2b.sh
+```
 
 ## 🚀 Evaluation
 ### 1. Environment Setup
@@ -83,15 +98,34 @@ Please organize the model weights in the following directory structure:
 ```
 
 ### 3. Run Evaluation
-#### Image Embedding Similarity Test
+#### Quick Start
 ```bash
-CUDA_VISIBLE_DEVICES=0 python ./eval/image_eval.py
+# Image Embedding Similarity Test
+CUDA_VISIBLE_DEVICES=0 python ./eval/toy_eval/image_eval.py
+# Video Embedding Similarity Test
+CUDA_VISIBLE_DEVICES=0 python ./eval/toy_eval/video_eval.py
 ```
 
-#### Video Embedding Similarity Test
+#### MMEB Eval
+For the complete evaluation code, please refer to [VLM2Vec](https://github.com/TIGER-AI-Lab/VLM2Vec). For the specific Embed-RL (Qwen-3VL) interface, please refer to:
 ```bash
-CUDA_VISIBLE_DEVICES=0 python ./eval/video_eval.py
+eval/mmeb_eval
 ```
+
+#### UVRB Eval
+```bash
+eval/uvrb_eval/run_uvrb_eval_cliploss_cot.sh
+```
+
+## 🚀 Data Pipeline
+For CoT processing, we adopt concurrent offline generation in practice. If you want to generate the corresponding CoT guidance for your own dataset, please refer to:
+```bash
+./data_pipe/train_cot_generate
+./data_pipe/eval_cot_generate
+```
+Detailed prompt can be seen at the appendix of the paper.
+
+
 
 ## 📄 Citation
 ```bibtex
@@ -102,3 +136,5 @@ CUDA_VISIBLE_DEVICES=0 python ./eval/video_eval.py
   year={2026}
 }
 ```
+
+If you would like to learn more details about data generation, evaluation, and training, please let us know. We will organize and share more details as soon as possible.

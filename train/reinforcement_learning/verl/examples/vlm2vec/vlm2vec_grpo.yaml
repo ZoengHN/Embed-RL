@@ -1,0 +1,174 @@
+hydra:
+  searchpath:
+    - file://verl/trainer/config
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+data:
+  custom_cls:
+    path: pkg://verl/utils/dataset/vlm2vec_dataset
+    name: VLM2VecDataset
+
+  train_files:
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/A-OKVQA_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/ChartQA_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/CIRR_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/llavahound_caption_retrieval_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/llavahound_qa_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/llavahound_video_retrieval_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/N24News_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/OK-VQA_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/openbmb_VisRAG-Ret-Train-In-domain-data_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/vidore_colpali_train_set_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/VisualNews_i2t_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/VisualNews_t2i_sampled.json
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/Visual7W_sampled.json
+
+  val_files:
+    - ./vlm2vec_train/MMEB-train-sample-cot-rl-sampled/Visual7W_sampled.json
+
+  max_prompt_length: 14336
+  max_response_length: 2048
+
+  train_batch_size: 32
+  val_batch_size: 8
+
+  image_key: images
+  video_key: videos
+  return_raw_chat: True
+  filter_overlong_prompts: True
+  truncation: 'error'
+  shuffle: True
+
+  use_grouped_sampler: true
+  drop_last: true
+  seed: 41
+
+actor_rollout_ref:
+  hybrid_engine: true
+  nccl_timeout: 1800
+
+  model:
+    path: Qwen3-VL-8B-Instruct
+    use_shm: false
+    enable_gradient_checkpointing: true
+    use_remove_padding: true
+
+  actor:
+    optim:
+      lr: 3e-6
+      weight_decay: 0.0
+      betas: [0.9, 0.999]
+      clip_grad: 1.0
+      lr_scheduler_type: constant
+      override_optimizer_config:
+        eps: 1e-8
+
+    ppo_mini_batch_size: 32
+    ppo_micro_batch_size_per_gpu: 4
+
+    use_kl_loss: true
+    kl_loss_coef: 0.01
+    kl_loss_type: low_var_kl
+    entropy_coeff: 0.0
+
+    strategy: fsdp
+    fsdp_config:
+      param_offload: false
+      optimizer_offload: true
+      model_dtype: bf16
+      use_orig_params: true
+
+    use_torch_compile: false
+
+  rollout:
+    name: vllm
+
+    agent:
+      num_workers: 1
+
+    temperature: 1.0
+    top_p: 1.0
+
+    tensor_model_parallel_size: 1
+
+    gpu_memory_utilization: 0.45
+    max_num_seqs: 4
+    max_model_len: 4096
+    max_num_batched_tokens: 16384
+    log_prob_micro_batch_size_per_gpu: 4
+
+    enable_chunked_prefill: false
+    load_format: safetensors
+    enforce_eager: false
+    free_cache_engine: true
+
+    n: 4
+
+    engine_kwargs:
+      vllm:
+        disable_mm_preprocessor_cache: true
+
+  ref:
+    strategy: fsdp
+    fsdp_config:
+      param_offload: true
+      model_dtype: bf16
+      use_orig_params: true
+    use_torch_compile: false
+    log_prob_micro_batch_size_per_gpu: 4
+
+reward_model:
+  enable: false
+  reward_manager: batch
+  num_workers: 1
+
+custom_reward_function:
+  path: pkg://verl/workers/reward_model/vlm2vec_reward
+
+  name: compute_score
+
+  reward_kwargs:
+    embedding_model_path: ./qwen3vl_embed
+    emb_token: "<emb>"
+    api_url: "http://0.0.0.0:22007/v1/embeddings"
+    model_name: "qwen3vl-embed"
+    rerank_api_url: "http://0.0.0.0/v1/chat/completions"
+    rerank_model_name: "Qwen3-VL-8B-Instruct"
+
+algorithm:
+  adv_estimator: grpo
+
+  norm_adv_by_std_in_grpo: true
+
+  use_kl_in_reward: false
+
+  kl_ctrl:
+    type: fixed
+    kl_coef: 0.01
+
+critic:
+  enable: false
+
+trainer:
+  total_epochs: 1
+  balance_batch: true
+
+  n_gpus_per_node: 8
+  nnodes: 1
+
+  logger:
+    - console
+    - wandb
+  project_name: vlm2vec_grpo
+  experiment_name: qwen3_vl_8b
+
+  save_freq: 100
+  test_freq: 99999
+
+  log_val_generations: 2
+  val_before_train: False
+
+  critic_warmup: 0

@@ -1,0 +1,18 @@
+dataset_name: MS_TI
+dataset_root:./test_data/Alibaba-NLP/UVRB_extracted/MS-TI/UVRB/MS-TI
+
+queries_file: jsonl/queries.jsonl
+instances_file: jsonl/instances.jsonl
+corpus_file: jsonl/corpus.jsonl
+frames_dir: videos_frames    
+images_dir: images
+
+num_video_frames: 8
+max_text_length: 8192
+
+max_length: 8192
+
+batch_size: 4
+num_workers: 8
+
+use_query_prompt: true
