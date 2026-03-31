@@ -13,10 +13,6 @@
 **Authors**: Haonan Jiang¹²*、Yuji Wang¹²*、Yongjie Zhu²†、Xin Lu²、Wenyu Qin²、Meng Wang²、Pengfei Wan²、Yansong Tang¹‡  
 **Affiliations**: ¹Tsinghua Shenzhen International Graduate School, Tsinghua University；²Kling Team, Kuaishou Technology  
 
-**Emails**:  
-{jiang-hn24[AT]mails, yuji-wan24[AT]mails, tang.yansong[AT]sz}.tsinghua.edu.cn  
-{zhuyongjie, luxin09, qinwenyu, wangmeng46, wanpengfei}[AT]kuaishou.com  
-
 *Equal Contribution. Work done during an internship at Kuaishou Technology. †Project Leader. ‡Corresponding Author.
 
 ## 📖 Abstract
