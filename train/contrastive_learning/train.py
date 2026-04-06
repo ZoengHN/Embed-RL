@@ -31,7 +31,7 @@ from transformers import (
     Qwen3VLForConditionalGeneration
 )
 
-from dataset.mmeb_unified_dataset import MMEBUnifiedDataset
+from dataset.mmeb_unified_dataset import MMEBUnifiedDataset, EmbedRLDataCollator
 from dataset.sampler import InterleavedSubBatchSampler
 from utils.utils import rank0_print, find_all_linear_names
 from torch.utils.data import DataLoader
