@@ -396,7 +396,7 @@ class MMEBUnifiedDataset(Dataset):
 
 class EmbedRLDataCollator:
 
-    def __init__(self, tokenizer, processor, max_length=1024):
+    def __init__(self, tokenizer, processor, max_length=8192):
         self.tokenizer = tokenizer
         self.processor = processor
         self.max_length = max_length
