@@ -339,7 +339,7 @@ class HFTrainingArguments(TrainingArguments):
         metadata={"help": "Path to the checkpoint directory to resume training from (e.g. ./checkpoints/xxx/checkpoint-250)"}
     )
 
-class GenVRTrainer(Trainer):
+class EmbedRLTrainer(Trainer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         rank = dist.get_rank() if dist.is_initialized() else 0
@@ -749,7 +749,7 @@ def train():
             split="train"
         )
         
-        data_collator = GenVRDataCollator(
+        data_collator = EmbedRLDataCollator(
             tokenizer=tokenizer,
             processor=processor,
             max_length=training_args.model_max_length
@@ -765,7 +765,7 @@ def train():
         rank0_print(f"Save steps: {training_args.save_steps}")
         rank0_print(f"Save total limit: {training_args.save_total_limit}")
         
-        trainer = GenVRTrainer(
+        trainer = EmbedRLTrainer(
             model=model,
             args=training_args,
             train_dataset=train_dataset,

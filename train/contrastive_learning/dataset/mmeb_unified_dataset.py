@@ -392,3 +392,221 @@ class MMEBUnifiedDataset(Dataset):
             "dataset": dataset_name,
             "sample_id": sample_id,
         }
+
+
+class EmbedRLDataCollator:
+
+    def __init__(self, tokenizer, processor, max_length=1024):
+        self.tokenizer = tokenizer
+        self.processor = processor
+        self.max_length = max_length
+
+        if hasattr(self.processor, 'tokenizer'):
+            emb_token = "<emb>"
+            if emb_token not in self.processor.tokenizer.get_vocab():
+                self.processor.tokenizer.add_tokens([emb_token])
+                print(f"Added {emb_token} to processor.tokenizer")
+
+            tokenizer_emb_id = self.tokenizer.convert_tokens_to_ids(emb_token)
+            processor_emb_id = self.processor.tokenizer.convert_tokens_to_ids(emb_token)
+
+            if tokenizer_emb_id != processor_emb_id:
+                print(f"WARNING: tokenizer and processor.tokenizer have different <emb> IDs!")
+                print(f"  tokenizer: {tokenizer_emb_id}, processor.tokenizer: {processor_emb_id}")
+            else:
+                print(f"<emb> token synced: ID = {tokenizer_emb_id}")
+
+        self.IMAGE_FACTOR = IMAGE_FACTOR
+        self.MIN_PIXELS = MIN_PIXELS
+        self.MAX_PIXELS = MAX_PIXELS
+        self.MAX_RATIO = 200
+
+        self.VIDEO_MIN_PIXELS = VIDEO_MIN_PIXELS
+        self.VIDEO_MAX_PIXELS = VIDEO_MAX_PIXELS
+        self.VIDEO_TOTAL_PIXELS = VIDEO_TOTAL_PIXELS
+
+    def _process_messages(self, messages):
+        import copy
+        messages = copy.deepcopy(messages)
+
+        has_video = False
+        has_image = False
+        for msg in messages:
+            if msg['role'] == 'user':
+                for content in msg['content']:
+                    if isinstance(content, dict):
+                        if 'video' in content:
+                            has_video = True
+                        elif 'image' in content or 'image_url' in content or content.get('type') == 'image':
+                            has_image = True
+
+        try:
+            if has_video:
+                text = self.processor.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=False
+                )
+
+                image_inputs, video_inputs = process_vision_info([messages])
+
+                if video_inputs is not None:
+                    inputs = self.processor(
+                        text=[text],
+                        images=image_inputs,
+                        videos=video_inputs,
+                        return_tensors='pt',
+                        padding='longest'
+                    )
+                else:
+                    inputs = self.processor(
+                        text=[text],
+                        images=image_inputs,
+                        videos=None,
+                        return_tensors='pt',
+                        padding='longest'
+                    )
+
+                text_inputs = {
+                    'input_ids': inputs['input_ids'][0].tolist(),
+                    'attention_mask': inputs['attention_mask'][0].tolist()
+                }
+                pixel_values = inputs.get('pixel_values', None)
+                image_grid_thw = inputs.get('image_grid_thw', None)
+
+            elif has_image:
+                text = self.processor.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=False
+                )
+
+                image_inputs, video_inputs = process_vision_info([messages])
+
+                inputs = self.processor(
+                    text=[text],
+                    images=image_inputs,
+                    videos=video_inputs,
+                    return_tensors='pt',
+                    padding='longest'
+                )
+
+                text_inputs = {
+                    'input_ids': inputs['input_ids'][0].tolist(),
+                    'attention_mask': inputs['attention_mask'][0].tolist()
+                }
+                pixel_values = inputs.get('pixel_values', None)
+                image_grid_thw = inputs.get('image_grid_thw', None)
+
+            else:
+                text = self.processor.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=False
+                )
+                text_inputs = self.tokenizer(
+                    text,
+                    padding=False,
+                    truncation=True,
+                    max_length=self.max_length,
+                    return_tensors=None
+                )
+                pixel_values = None
+                image_grid_thw = None
+
+        except Exception as e:
+            print(f"Error processing messages: {e}")
+            print(f"Messages: {messages}")
+            import traceback
+            traceback.print_exc()
+            raise
+
+        return text_inputs, pixel_values, image_grid_thw
+
+    def __call__(self, batch):
+        batch_size = len(batch)
+
+        all_messages = []
+        for item in batch:
+            all_messages.append(item['query_messages'])
+        for item in batch:
+            all_messages.append(item['target_messages'])
+
+        texts = []
+        for messages in all_messages:
+            text = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=False
+            )
+            texts.append(text)
+
+        from qwen_vl_utils import process_vision_info as official_process_vision_info
+
+        image_inputs, video_inputs, video_kwargs = official_process_vision_info(
+            all_messages,
+            return_video_kwargs=True,
+            image_patch_size=16,
+            return_video_metadata=True
+        )
+
+        if video_inputs is not None:
+            video_inputs, video_metadatas = zip(*video_inputs)
+            video_inputs, video_metadatas = list(video_inputs), list(video_metadatas)
+        else:
+            video_metadatas = None
+
+        if video_inputs is not None or image_inputs is not None:
+            inputs = self.processor(
+                text=texts,
+                images=image_inputs,
+                videos=video_inputs,
+                video_metadata=video_metadatas,
+                **video_kwargs,
+                do_resize=True,
+                padding=True,
+                return_tensors="pt",
+            )
+        else:
+            inputs = self.processor(
+                text=texts,
+                padding=True,
+                truncation=True,
+                max_length=self.max_length,
+                return_tensors="pt",
+            )
+
+        input_ids = inputs['input_ids']
+        attention_mask = inputs.get('attention_mask', None)
+        pixel_values = inputs.get('pixel_values', None)
+        image_grid_thw = inputs.get('image_grid_thw', None)
+        pixel_values_videos = inputs.get('pixel_values_videos', None)
+        video_grid_thw = inputs.get('video_grid_thw', None)
+
+        labels = input_ids.clone()
+
+        emb_token_id = self.tokenizer.convert_tokens_to_ids("<emb>")
+        for i in range(len(labels)):
+            emb_count = (labels[i] == emb_token_id).sum().item()
+            if emb_count == 0:
+                print(f"CRITICAL: Sample {i} has no <emb> token!")
+                print(f"  Text preview: {texts[i][:200]}")
+            elif emb_count > 1:
+                print(f"WARNING: Sample {i} has {emb_count} <emb> tokens!")
+
+        batch_data = {
+            'input_ids': input_ids,
+            'attention_mask': attention_mask,
+            'labels': labels,
+        }
+
+        if pixel_values is not None:
+            batch_data['pixel_values'] = pixel_values
+        if image_grid_thw is not None:
+            batch_data['image_grid_thw'] = image_grid_thw
+        if pixel_values_videos is not None:
+            batch_data['pixel_values_videos'] = pixel_values_videos
+        if video_grid_thw is not None:
+            batch_data['video_grid_thw'] = video_grid_thw
+
+        return batch_data
