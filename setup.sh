@@ -7,7 +7,3 @@ pip install boto3
 pip install accelerate peft deepspeed tensorboard
 pip install qwen-vl-utils
 pip install vector-quantize-pytorch
-
-git clone https://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@github.com/ZoengHN/GenVR.git
-git clone https://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@github.com/ZoengHN/verl.git
-git clone https://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@github.com/ZoengHN/vlm2vec.git
