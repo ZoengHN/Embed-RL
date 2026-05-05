@@ -54,32 +54,6 @@ class EmbeddingShareStore:
             del self.ready_workers[step]
         return True
 
-EMBEDDING_MODEL_PATH = "/models/genvr_embedding_model"
-EMB_TOKEN = "<emb>"
-API_URL = "http://127.0.0.1:22007/v1/embeddings"
-MODEL_NAME = "genvr-qwen3vl-embed"
-PRM_API_URL = "http://127.0.0.1:22006/v1/chat/completions"
-PRM_MODEL_NAME = "/models/Qwen3-VL-8B-Instruct"
-PRM_TOP_K = 4
-FORMAT_REWARD_WEIGHT = 0.05
-ORM_WEIGHT = 0.8
-PRM_WEIGHT = 0.2
-ENABLE_FORMAT_REWARD = True
-ENABLE_ORM = True
-ENABLE_PRM = True
-ACCURACY_WEIGHT = 0.5
-MARGIN_WEIGHT = 0.5
-NEGATIVE_TEMPERATURE = 0.5
-MIN_PIXELS = 128 * 32 * 32
-MAX_PIXELS = 768 * 32 * 32
-VIDEO_MIN_PIXELS = 128 * 32 * 32
-VIDEO_MAX_PIXELS = 300 * 32 * 32
-VIDEO_TOTAL_PIXELS = 300 * 32 * 32 * 8
-FRAME_FACTOR = 2
-FPS = 2.0
-FPS_MIN_FRAMES = 8
-FPS_MAX_FRAMES = 8
-
 async def get_or_create_embedder_actor(
     embedding_model_path: str = EMBEDDING_MODEL_PATH,
     emb_token: str = EMB_TOKEN,
