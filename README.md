@@ -1,4 +1,4 @@
-# Embed-RL: Reinforcement Learning for Reasoning-Driven Multimodal Embeddings
+# 🎉 [ECCV 2026] Embed-RL: Reinforcement Learning for Reasoning-Driven Multimodal Embeddings
 <div align="center">
 
 [![🤗 Dataset](https://img.shields.io/badge/🤗%20HuggingFace-Embed--RL--Train-blue)](https://huggingface.co/datasets/ZoengHouNaam/Embed-RL-Train)
